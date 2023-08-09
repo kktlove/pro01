@@ -103,6 +103,9 @@
 
     <link rel="stylesheet" href="../jquery.dataTables.css">
     <script src="../jquery.dataTables.js"></script>
+    <style>
+    #myTable_length, #dataTables_filter { margin-top:20px; margin-bottom:20px; }
+    </style>
 </head>
 <body>
 <div class="container">
