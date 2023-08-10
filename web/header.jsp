@@ -61,8 +61,10 @@
                 <ul class="sub">
                     <li><a href="/board/boardList.jsp">공지사항</a></li>
                     <li><a href="/qna/qnaList.jsp">묻고 답하기</a></li>
-                    <li><a href="promotion.html#pr">광고</a></li>
-                    <li><a href="promotion.html#story">천재이야기</a></li>
+                    <li><a href="/faq/faqList.jsp">자주하는 질문</a></li>
+                    <% if(sid!=null) { %>
+                    <li><a href="/faq/online.jsp">온라인 상담</a></li>
+                    <% } %>
                 </ul>
             </li>
             <li class="item5">

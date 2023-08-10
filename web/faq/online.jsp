@@ -1,48 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
-<%-- 1. 필요한 라이브러리 임포트 --%>
-<%@ page import="java.sql.*" %>
-<%@ page import="java.util.*" %>
-<%@ page import="java.util.Date" %>
-<%@ page import="java.text.*" %>
-<%@ page import="com.chunjae.db.*" %>
-<%@ page import="com.chunjae.vo.*" %>
-<%@ include file="../encoding.jsp" %>
-<%
-    //2. DB 연결
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-    ResultSet rs = null;
-    DBC con = new MariaDBCon();
-    conn = con.connect();
-
-    //3. SQL을 실행하여 결과셋(ResultSet) 받아오기
-    String sql = "SELECT a.qno AS qno, a.title AS title, a.content AS content, a.author AS author, a.resdate AS resdate, a.cnt as cnt, a.lev AS lev, a.par AS par, b.name AS name FROM qna a, member b WHERE a.author=b.id order BY a.par DESC, a.lev ASC, a.qno ASC";
-    pstmt = conn.prepareStatement(sql);
-    rs = pstmt.executeQuery();
-
-    //4. 받아온 결과셋(ResultSet) 을 질문및답변 목록(qnaList)에 불러와 하나의 레코드씩 담기
-    List<Qna> qnaList = new ArrayList<>();
-    while(rs.next()){
-        Qna qna = new Qna();
-        qna.setQno(rs.getInt("qno"));
-        qna.setTitle(rs.getString("title"));
-        qna.setContent(rs.getString("content"));
-        qna.setAuthor(rs.getString("author"));
-        qna.setResdate(rs.getString("resdate"));
-        qna.setCnt(rs.getInt("cnt"));
-        qna.setLev(rs.getInt("lev"));
-        qna.setPar(rs.getInt("par"));
-        qna.setName(rs.getString("name"));
-        qnaList.add(qna);
-    }
-    con.close(rs, pstmt, conn);
-%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>묻고 답하기 목록</title>
+    <title>온라인 상담</title>
     <%@ include file="../head.jsp" %>
     <!-- 스타일 초기화 : reset.css 또는 normalize.css -->
     <link href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css" rel="stylesheet">
@@ -103,11 +65,6 @@
         .btn_group p {text-align: center;   line-height:3.6; }
     </style>
 
-    <link rel="stylesheet" href="../jquery.dataTables.css">
-    <script src="../jquery.dataTables.js"></script>
-    <style>
-        #myTable_length, #dataTables_filter { margin-top:20px; margin-bottom:20px; }
-    </style>
 </head>
 <body>
 <div class="container">
@@ -116,50 +73,52 @@
     </header>
     <div class="contents" id="contents">
         <div class="breadcrumb">
-            <p><a href="/">HOME</a> &gt; <a href="/qna/qnaList.jsp">질문 및 답변</a> &gt; <span>질문 및 답변 목록</span></p>
+            <p><a href="/">HOME</a> &gt; <a href="/faq/online.jsp">온라인 상담</a></p>
         </div>
         <section class="page" id="page1">
             <div class="page_wrap">
-                <h2 class="page_tit">질문 및 답변 목록</h2>
+                <h2 class="page_tit">온라인 상담</h2>
                 <br><br><hr><br><br>
-                <table class="tb1" id="myTable">
-                    <thead>
-                    <tr>
-                        <th class="item1">글번호</th><th class="item2">제목</th>
-                        <th class="item3">작성자</th><th class="item4">작성일</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <%
-                        SimpleDateFormat ymd = new SimpleDateFormat("yy-MM-dd");
-                        int tot = qnaList.size();
-                        for(Qna q:qnaList) {
-                            Date d = ymd.parse(q.getResdate());
-                            String date = ymd.format(d);
-                    %>
-                    <tr>
-                        <td class="item1"><%=tot %></td>
-                        <td class="item2">
-                            <% if(q.getLev()==0) { %>
-                            <a href="/qna/getQna.jsp?qno=<%=q.getQno()%>"><%=q.getTitle() %></a>
-                            <% } else { %>
-                            <a style="padding-left:28px;" href="/qna/getQna.jsp?qno=<%=q.getQno()%>">[답변] <%=q.getTitle() %></a>
-                            <% } %>
-                        </td>
-                        <td class="item3"><%=q.getName()%></td>
-                        <td class="item4"><%=date %></td>
-                    </tr>
-                    <%
-                            tot--;
-                        }
-                    %>
-                    </tbody>
-                </table>
+                <!-- 작성자 id, 보내는 사람 email주소, 연락처, 상담 제목, 상담내용 입력 폼 -->
+                <form action="onlinePro.jsp" method="post">
+                    <table class="tb1">
+                        <tbody>
+                        <tr>
+                            <th><label for="author">작성자 이름</label></th>
+                            <td><input type="text" name="name" id="name" class="indata" required>
+                                <input type="hidden" name="author" id="author" value="<%=sid %>">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="from">이메일 주소</label></th>
+                            <td><input type="email" name="from" id="from" class="indata" required></td>
+                        </tr>
+                        <tr>
+                            <th><label for="tel">연락처</label></th>
+                            <td><input type="tel" name="tel" id="tel" class="indata" required></td>
+                        </tr>
+                        <tr>
+                            <th><label for="title">상담 제목</label></th>
+                            <td><input type="text" name="title" id="title" class="indata" required></td>
+                        </tr>
+                        <tr>
+                            <th><label for="content">상담 내용</label></th>
+                            <td>
+                                <textarea cols="100" rows="6" name="content" id="content" maxlength="600" class="indata2"></textarea>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn_group">
+                        <button type="submit" class="inbtn">상담 신청</button>
+                        <a href="/qna/qnaList.jsp" class="inbtn">질문 및 답변으로</a>
+                    </div>
+                </form>
             </div>
         </section>
     </div>
     <footer class="ft" id="ft">
-        <%@ include file="../footer.jsp" %>
+<%--        <%@ include file="../footer.jsp "%>--%>
     </footer>
 </div>
 </body>
